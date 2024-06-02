@@ -1,8 +1,81 @@
-﻿@{
-    ViewData["Title"] = "Home Page";
+﻿@model DropDownsVM
+@{
+    ViewData["Title"] = "Inicio";
 }
 
 <div class="text-center">
-    <h1 class="display-4">Welcome</h1>
+    <h1 class="display-4">DropDowns Anidados con .NET 8</h1>
     <p>Learn about <a href="https://docs.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
 </div>
+<div class="row">
+    <div class="col-4">
+        <label for="sucursalDropdown">Sucursal:</label>
+        <select id="sucursalDropdown" class="form-control">
+            <option value="">Seleccione  una sucursal</option>
+            @foreach (var sucursal in Model.Sucursales)
+            {
+                <option value="@sucursal.Id">@sucursal.Nombre</option>
+            }
+            
+        </select>
+    </div>
+    <div class="col-4">
+        <label for="categoriaDropdown">Categoria:</label>
+        <select id="categoriaDropdown" class="form-control" disabled >
+            <option value="">Seleccione  una categoria</option>
+        </select>
+    </div>
+
+    <div class="col-4">
+        <label for="productoDropdown">Producto:</label>
+        <select id="productoDropdown" class="form-control" disabled>
+            <option value="">Seleccione  una producto</option>
+        </select>
+    </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+    $(document).ready(function () {
+        $("#sucursalDropdown").change(function () {
+            var sucursalID = $(this).val();
+            console.log("idSucursal: " + sucursalID);
+            $("#categoriaDropdown").empty().append('<option value="">Seleccione una categoria</option>').prop("disabled", true);
+            $("#productoDropdown").empty().append('<option value="">Seleccione un producto</option>').prop("disabled", true);
+            if (sucursalID) {
+                $.ajax({
+                    url: "/Home/ObtenerCategorias",
+                    type: "GET",
+                    data: { sucursalID: sucursalID },
+                    success: function (categorias) {
+                        $.each(categorias, function (index, categoria) {
+                            $("#categoriaDropdown").append('<option value="' + categoria.id + '">' + categoria.nombre + '</option>');
+                        });
+                        $("#categoriaDropdown").prop("disabled", false);
+                    }
+                })
+            }
+        })
+
+        // Evento change para el dropdown de categoría
+        $("#categoriaDropdown").change(function () {
+            var categoriaID = $(this).val();
+            console.log("idCategoria: " + categoriaID);
+            $("#productoDropdown").empty().append('<option value="">Seleccione un producto</option>').prop("disabled", true);
+            if (categoriaID) {
+                $.ajax({
+                    url: "/Home/ObtenerProductos",
+                    type: "GET",
+                    data: { categoriaID: categoriaID },
+                    success: function (productos) {
+                        $.each(productos, function (index, producto) {
+                            $("#productoDropdown").append('<option value="' + producto.id + '">' + producto.nombre + '</option>');
+                        });
+                        $("#productoDropdown").prop("disabled", false);
+                    }
+                })
+            }
+        })
+    })
+</script>
+
